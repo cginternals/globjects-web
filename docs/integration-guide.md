@@ -1,4 +1,5 @@
-![globjects Logo](globjects-logo.png "globjects")
+
+<br><a href="https://globjects.org/"><img src="globjects-logo.svg?sanitize=true" width="50%"></a>
 
 *globjects* is an [MIT licensed](http://opensource.org/licenses/MIT), cross-platform C++ wrapper for [OpenGL API](http://www.opengl.org) objects.
 
