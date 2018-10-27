@@ -252,7 +252,7 @@ glbinding::Binding::useContext(handle);
 
 # Wrapped OpenGL Objects
 
-##### Global Functions
+### Global Functions
 
 Some often used functions are wrapped to ease the interface as proposed by the OpenGL API.
 
@@ -268,7 +268,7 @@ if (isCoreProfile())
 }
 ```
 
-##### Buffer
+### Buffer
 
 A buffer in means of OpenGL can be used for vertex attributes, indices, uniform data, atomic counters, texture data, and shader storage data.
 
@@ -285,7 +285,7 @@ buffer->setSubData({{ 4, 3, 2 }}, 0);
 buffer->bindBase(GL_SHADER_STORAGE_BUFFER, 0);
 ```
 
-##### Texture
+### Texture
 
 Texture supports both traditional interfaces and bindless support.
 
@@ -306,7 +306,7 @@ auto handle = texture2->textureHandle(); // for bindless texturing
 texture2->bindActive(0); // For traditional texturing
 ```
 
-##### State
+### State
 
 OpenGL state is wrapped as States, StateSettings and Capabilities, where the latter two are mainly used internally.
 
@@ -324,7 +324,7 @@ state2->apply();
 currentState->apply(); // Reset manipulated state
 ```
 
-##### Error
+### Error
 
 ```cpp
 auto error = Error::get();
@@ -335,7 +335,7 @@ if (error)
 }
 ```
 
-##### Debug Message
+### Debug Message
 
 Enable DebugMessages to get performance hints, warnings and errors from your OpenGL driver.
 
@@ -347,7 +347,7 @@ DebugMessage::setCallback([](const DebugMessage & message) {
 }); // if you want to handle messages by yourself
 ```
 
-##### Framebuffer
+### Framebuffer
 
 Wraps a canvas with multiple render targets to render on.
 
@@ -366,7 +366,7 @@ fbo->blit(GL_COLOR_ATTACHMENT0, {{ 0, 0, width, height }}, Framebuffer::defaultF
     GL_BACK_LEFT, {{ 0, 0, width, height }}, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 ```
 
-##### Named String
+### Named String
 
 Register compile-time shader replacements for shader includes.
 
@@ -378,7 +378,7 @@ auto namedString1 = new NamedString("/upNormal.glsl", "const vec3 up = vec3(0.0,
 auto namedString2 = new NamedString("/phong.glsl", new File("data/shaders/phong.glsl"));
 ```
 
-##### Program
+### Program
 
 The Program object can represent both render programs and compute programs. Prior usage it automatically relinks upon shader changes.
 
@@ -395,7 +395,7 @@ computeProgram->attach(computeShader);
 computeProgram->dispatchCompute(128, 1, 1);
 ```
 
-##### Program Pipeline
+### Program Pipeline
 
 ```cpp
 auto pipeline = new ProgramPipeline();
@@ -404,7 +404,7 @@ pipeline->useStages(fragmentProgram, gl::GL_FRAGMENT_SHADER_BIT);
 pipeline->use(); // as Program interface
 ```
 
-##### Query
+### Query
 
 Query and measure time and perform conditional rendering with passed samples.
 
@@ -422,14 +422,14 @@ if (!query->resultsAvailable())
 auto elapsed = query->get(GL_QUERY_RESULT);
 ```
 
-##### Renderbuffer
+### Renderbuffer
 
 ```cpp
 auto renderBuffer = new Renderbuffer();
 renderBuffer->storage(GL_RGBA32F, 512, 512);
 ```
 
-##### Sampler
+### Sampler
 
 For temporary overrides of texture parameters. Note: a newly created sampler is not configured by default, and thus invalid.
 
@@ -443,7 +443,7 @@ sampler->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 sampler->bind(0); // override sampler state for texture at binding point 0
 ```
 
-##### Shader
+### Shader
 
 ```cpp
 auto shader1 = new Shader::fromFile(GL_VERTEX_SHADER, filename);
@@ -457,7 +457,7 @@ shader2->compile();
 std::cout << shader2->infoLog() << std::endl; // acess compile info log, although it's done automatically if there is a compile error
 ```
 
-##### Sync
+### Sync
 
 ```cpp
 auto sync = Sync::fence(GL_SYNC_GPU_COMMANDS_COMPLETE);
@@ -466,7 +466,7 @@ sync->clientWait(GL_SYNC_FLUSH_COMMANDS_BIT, 2000000000); // wait on GPU; 2 secs
 sync->waitSync(1000000); // wait on CPU; 1 millisecond
 ```
 
-##### Transform Feedback
+### Transform Feedback
 
 Connect shader outputs to buffers and restart drawing.
 
@@ -484,7 +484,7 @@ glDisable(GL_RASTERIZER_DISCARD);
 tf->draw(GL_TRIANGLE_STRIP);
 ```
 
-##### Uniform
+### Uniform
 
 Uniforms attached to Programs are updated automatically, even after relinking.
 
@@ -498,7 +498,7 @@ program->addUniform(uniform2);
 program->use(); // uniform values are updated if required
 ```
 
-##### Uniform Block
+### Uniform Block
 
 Use uniform blocks for large, often switched chunks of uniforms.
 
@@ -508,7 +508,7 @@ block->setBinding(0);
 buffer->bindBase(GL_UNIFORM_BUFFER, 0);
 ```
 
-##### Vertex Array
+### Vertex Array
 
 Use to configure vertex shader inputs and trigger render pipeline processes.
 
@@ -522,7 +522,7 @@ vao->enable(1);
 vao->drawArrays(GL_POINTS, 0, 10);
 ```
 
-##### Vertex Attribute Binding
+### Vertex Attribute Binding
 
 ```cpp
 // For attribute pointers
@@ -537,7 +537,7 @@ binding2->setValue<float>(1.0f);
 
 # Additional Features
 
-##### Reference Pointers
+### Reference Pointers
 
 globjects uses the RAII (resource allocation is initialization) principle, meaning that created objects are also created on the GPU.
 To effectively manage the dual-allocated memory, we use reference pointers.
@@ -559,7 +559,7 @@ program->ref(); // increase reference count
 program->unref(); // decreare reference count; potentially free program pointer and GPU program
 ```
 
-##### Shader Templates
+### Shader Templates
 
 The sources of Shaders (```ShaderSource```) can be configured and templated.
 
@@ -570,7 +570,7 @@ template->replace("REPLACE", "WITH THIS");
 auto shader = new Shader(template);
 ```
 
-##### Strategy Override
+### Strategy Override
 
 Although globjects tries to use most current OpenGL APIs, you can override this automatic process.
 
@@ -582,7 +582,7 @@ globjects::init(Shader::IncludeImplementation::Fallback);
 Buffer::hintBindlessImplementation(Buffer::BindlessImplementation::Legacy);
 ```
 
-##### Logging
+### Logging
 
 globjects provides logging interfaces to its objects as well as glm objects.
 
