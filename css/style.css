@@ -28,12 +28,15 @@ pre, code {
 }
 
 header, footer {
-    margin-top: 6rem;
+    padding-top: 4rem;
+}
+
+footer {
+    padding-bottom: 2rem;
 }
 
 section {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    padding-top: 2rem;
 }
 
 
@@ -137,6 +140,6 @@ canvas:-webkit-full-screen {
     padding: 0;
 }
 
-img[alt=what-is-globjects] {
+img[alt=what-is-glbinding] {
     width: 100%;
 }
