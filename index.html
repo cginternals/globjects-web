@@ -1,0 +1,438 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>globjects</title><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png"><link rel="stylesheet" href="css/bootstrap-4.0.0.min.css"><link rel="stylesheet" href="css/fonts.css"><link rel="stylesheet" href="css/style.css"><link rel="stylesheet" href="css/highlightjs.min.css"><script src="js/jquery-3.2.1.slim.min.js"></script><script src="js/popper-1.12.9.min.js"></script><script src="js/bootstrap-4.0.0.min.js"></script><script src="js/rx-5.5.6.min.js"></script><script src="js/website.js"></script><script src="js/clipboard.min.js"></script><!-- link(rel = 'stylesheet' href = 'css/template.css')--><!-- script(src = 'js/tempalte.js')--></head><body class="bg-light"><nav class="navbar navbar-expand-md navbar-dark bg-dark"><div class="container"><a class="nav-link px-0" href="https://cginternals.com"><span class="d-none d-md-block"><img class="img-fluid mt-0" src="img/cginternals.svg" alt="cginternals logo"></span><span class="d-block d-md-none"><img class="img-fluid mt-0" src="img/navicon.svg" alt="cginternals icon"></span></a><ul class="navbar-nav ml-auto" id="nav"><li class="nav-item active"><a class="nav-link" href="/">GLOBJECTS</a></li><li class="nav-item"><a class="nav-link" href="/docs.html">DOCUMENTATION</a></li><li class="nav-item"><a class="nav-link" href="https://github.com/cginternals/globjects/wiki">WIKI</a></li><li class="nav-item"><a class="nav-link" href="https://github.com/cginternals/globjects">GITHUB</a></li></ul></div></nav><section class="container"><header class="jumbatron"><img class="mb-2 w-50 d-none d-md-block" src="img/globjects-logo.svg" alt="globjects logo"><img class="mb-2 d-block d-md-none" src="img/globjects-logo.svg" alt="globjects logo"><p class="lead">globjects is a cross-platform C++ wrapper for OpenGL API objects.</p></header></section><section class="container"><div class="row"><div class="col"><p><em>globjects</em> provides object-oriented interfaces to the OpenGL API (3.0 and higher).
+It reduces the amount of OpenGL code required for rendering and facilitates coherent OpenGL use by means of an additional abstraction layer to <a href="https://github.com/cginternals/glbinding">glbinding</a> and <a href="https://github.com/g-truc/glm">GLM</a>. Common rendering tasks and processes are automated and missing features of specific OpenGL drivers are partially simulated or even emulated at run-time.</p>
+<p><img src="https://raw.githubusercontent.com/cginternals/globjects/master/docs/what-is-globjects.png" alt="what-is-globjects"></p>
+<p>The following code snippet shows an exemplary use of the OpenGL API:</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// OpenGL API</span>
+
+<span class="hljs-keyword">auto</span> program = glCreateProgram();
+<span class="hljs-keyword">auto</span> vertexShader = glCreateShader(GL_VERTEX_SHADER);
+<span class="hljs-keyword">auto</span> fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+glShaderSource(vertexShader, <span class="hljs-number">1</span>, &amp;vertexShaderSource, <span class="hljs-literal">nullptr</span>);
+glShaderSource(fragmentShader, <span class="hljs-number">1</span>, &amp;fragmentShaderSource, <span class="hljs-literal">nullptr</span>);
+
+glCompileShader(vertexShader);
+glCompileShader(fragmentShader);
+
+glAttachShader(program, vertexShader);
+glAttachShader(program, fragmentShader);
+
+glLinkProgram(program);
+
+glUseProgram(program);
+glUniform2f(glGetUniformLocation(program, <span class="hljs-string">"extent"</span>), <span class="hljs-number">1.0f</span>, <span class="hljs-number">0.5f</span>);
+</code></pre>
+<p>Using <em>globjects</em>, this can be reduced to the following code:</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// globjects API</span>
+
+<span class="hljs-keyword">auto</span> program = <span class="hljs-keyword">new</span> Program();
+
+program-&gt;attach(
+  Shader::fromString(GL_VERTEX_SHADER, vertexShaderSource), 
+  Shader::fromString(GL_FRAGMENT_SHADER, fragmentShaderSource)
+);
+
+program-&gt;setUniform(<span class="hljs-string">"extent"</span>, glm::vec2(<span class="hljs-number">1.0f</span>, <span class="hljs-number">0.5f</span>)));
+</code></pre>
+<p>If enabled, this code checks (1) for GL errors (<code>glGetError</code>) after each call, (2) shaders for compilation errors, and (3) the program for linker errors.</p>
+<h1>Resources</h1>
+<ul>
+<li><a href="https://github.com/cginternals/globjects/wiki/examples">Examples</a></li>
+<li><a href="#project-health">Project Health</a></li>
+<li><a href="https://cginternals.github.io/globjects/docs">Doxygen Documentations</a> (<a href="https://cginternals.github.io/globjects/docs/v1.1">stable</a>, <a href="https://cginternals.github.io/globjects/docs/master">master</a>)</li>
+</ul>
+<h5>Installation and Development</h5>
+<ul>
+<li><a href="#install-instructions">Install Instructions</a></li>
+<li><a href="#build-instructions">Build form Source</a></li>
+<li><a href="#tips-for-linking">Tips for Linking</a></li>
+</ul>
+<h5>Context Management</h5>
+<ul>
+<li><a href="#initialize-contexts">Initializing Contexts</a></li>
+</ul>
+<h5>Wrapped OpenGL Objects and Code Snippets</h5>
+<ul>
+<li><a href="#global-functions">Global Functions</a></li>
+<li><a href="#buffer">Buffer</a></li>
+<li><a href="#texture">Texture</a></li>
+<li><a href="#state">State</a></li>
+<li><a href="#error">Error</a></li>
+<li><a href="#debug-message">Debug Message</a></li>
+<li><a href="#framebuffer">Framebuffer</a></li>
+<li><a href="#named-string">Named String</a></li>
+<li><a href="#program">Program</a></li>
+<li><a href="#program-pipeline">Program Pipeline</a></li>
+<li><a href="#query">Query</a></li>
+<li><a href="#renderbuffer">Renderbuffer</a></li>
+<li><a href="#sampler">Sampler</a></li>
+<li><a href="#shader">Shader</a></li>
+<li><a href="#sync">Sync</a></li>
+<li><a href="#transform-feedback">Transform Feedback</a></li>
+<li><a href="#uniform">Uniform</a></li>
+<li><a href="#uniform-block">Uniform Block</a></li>
+<li><a href="#vertex-array">Vertex Array</a></li>
+<li><a href="#vertex-attribute-binding">Vertex Attribute Binding</a></li>
+</ul>
+<h5>Additional Feature Documentation and Code Snippets</h5>
+<ul>
+<li><a href="#reference-pointers">Reference pointer as memory model</a></li>
+<li><a href="#shader-templates">Shader templates</a></li>
+<li><a href="#strategy-override">Manual strategy override</a></li>
+<li><a href="#logging">iostream Integration</a></li>
+</ul>
+<h1>Install Instructions</h1>
+<p><em>globjects</em> is available for different platforms using different distribution channels.
+You can either download the source and manually <a href="#build-instructions">compile</a> it or use one of the <a href="https://github.com/cginternals/globjects/releases">pre-compiled releases</a> of this repository.
+For systems providing package managers, we generally strive for packages in these package managers.</p>
+<h5>Windows</h5>
+<p>The various globjects packages can be installed either by downloading an installer, e.g., the <a href="https://github.com/cginternals/globjects/releases/download/v1.0.0/globjects-1.0.0-msvc2015-x64-installer.exe">latest x64 installer</a> for Microsoft Visual Studio 2015, or downloading and extracting one of the precompiled archives, e.g. <a href="https://github.com/cginternals/globjects/releases/download/v1.0.0/globjects-1.0.0-msvc2015-x64-runtime.zip">runtime</a>,
+<a href="https://github.com/cginternals/globjects/releases/download/v1.0.0/globjects-1.0.0-msvc2015-x64-examples.zip">examples</a>, and
+<a href="https://github.com/cginternals/globjects/releases/download/v1.0.0/globjects-1.0.0-msvc2015-x64-dev.zip">dev</a>.
+Alternatively, download the source code and commence <a href="#build-instructions">building from source</a>.</p>
+<h5>Ubuntu</h5>
+<p><em>globjects</em> is provided on Ubuntu using PPAs.
+For Ubuntu 16.04 (xenial), 15.10 (wily), and 15.04 (vivid) use the <a href="https://launchpad.net/~cginternals/+archive/ubuntu/ppa">current PPA</a>, for Ubuntu 14.04 (trusty) use the <a href="https://launchpad.net/~cginternals/+archive/ubuntu/backports-ppa">backports PPA</a>.
+Using the current PPA as example, the following lines install <em>globjects</em> including the GLFW examples:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> sudo apt-add repository ppa:cginternals/ppa</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> sudo apt-get update</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> sudo apt-get install libglobjects-examples-glfw</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-comment"># start example</span></span>
+<span class="hljs-meta">&gt;</span><span class="bash"> /usr/share/globjects/computeshader</span>
+</code></pre>
+<p>To use globjects as dependency, install the development package:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> sudo apt-get install libglobjects-dev libglobjects-dbg</span>
+</code></pre>
+<p>Alternatively, download the source code and commence <a href="#build-instructions">building from source</a>.</p>
+<h5>OS X</h5>
+<p>The package manager on OS X we depend on is homebrew. The package there is called <a href="http://brewformulas.org/Globjects">globjects</a>.
+To install <em>globjects</em> using homebrew, execute the following line:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> brew install globjects</span>
+</code></pre>
+<p>Alternatively, download the source code and commence <a href="#build-instructions">building from source</a>.</p>
+<h5>Debian-based Systems</h5>
+<p>There is currently no precompiled package maintained. Please download the source code and commence <a href="#build-instructions">building from source</a>.</p>
+<h1>Build Instructions</h1>
+<h5>Prerequisites and Dependencies</h5>
+<p>The only mandatory run-time dependencies of globjects are the STL of the used compiler, glbinding, and an OpenGL driver library, dynamically linked with your application. However, compiling <em>globjects</em> requires the following required and optional dependencies:</p>
+<ul>
+<li><a href="https://cmake.org/">CMake</a> 3.0 or higher for building globjects from source (mandatory for any build from source)</li>
+<li><a href="https://git-scm.com/">git</a> for version control and script supporting tasks</li>
+<li><a href="https://github.com/cginternals/glbinding">glbinding</a> as OpenGL API binding</li>
+<li><a href="https://github.com/g-truc/glm">GLM</a> for OpenGL math and data structures (0.9.7 or above)</li>
+<li><a href="http://www.glfw.org/">GLFW</a> 3.0 or higher for examples</li>
+<li><a href="https://github.com/cginternals/cpplocate">cpplocate</a> for the examples</li>
+<li><a href="http://www.qt.io/developers/">Qt5</a> 5.0 or higher for the qt-based example</li>
+<li><a href="http://www.stack.nl/~dimitri/doxygen/">Doxygen</a> 1.8 or higher for generating the documentation on your system
+<ul>
+<li><a href="http://www.graphviz.org/">graphviz</a> for generating diagrams (optional)</li>
+</ul>
+</li>
+</ul>
+<h5>Compile Instructions</h5>
+<p>For compilation, a C++11 compliant compiler, e.g., GCC 4.8, Clang 3.3, MSVC 2013 <strong>Update 3</strong>, is required.</p>
+<p>First, download the source code <a href="https://github.com/cginternals/globjects/releases">as archive</a> or via git:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> git <span class="hljs-built_in">clone</span> https://github.com/cginternals/globjects.git</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> globjects</span>
+</code></pre>
+<p>Then, depending on the version of globjects you want to build, choose the appropriate tag or branch, e.g., for the 1.0.0 release:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> git fetch --tags</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> git checkout v1.0.0</span>
+</code></pre>
+<p>The actual compilation can be done using CMake and your favorite compiler and IDE.</p>
+<p>For building <em>globjects</em> CMake via command line can be used (should work on all systems):</p>
+<p>First create a build directory (we do not recommend in-source builds):</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> mkdir build</span>
+<span class="hljs-meta">&gt;</span><span class="bash"> <span class="hljs-built_in">cd</span> build</span>
+</code></pre>
+<p>Configure <em>globjects</em> with your prefered or default generator, e.g., for Visual Studio 2015 in x64 use
+(note: some IDEs have integrated support for CMake projects, e.g., Qt Creator, and allow you to skip the manual project configuration):</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> cmake .. -G <span class="hljs-string">"Visual Studio 14 2015 Win64"</span></span>
+</code></pre>
+<p>In order to compile the project, either use you favorite Editor/IDE with the created project or use CMake as follows:</p>
+<pre><code class="hljs language-shell"><span class="hljs-meta">&gt;</span><span class="bash"> cmake --build .</span>
+</code></pre>
+<h1>Tips for Linking</h1>
+<p>We suggest using the build system of globjects for a smooth integration: <a href="https://cmake.org/">CMake</a></p>
+<p>For it, <em>globjects</em> provides a find configuration script that should be installed into your system or at least accessible by CMake.
+In the projects CMakeLists.txt, add one of the following lines:</p>
+<pre><code class="hljs"><span class="hljs-keyword">find_package</span>(globjects QUIET) <span class="hljs-comment"># if you want to check for existance</span>
+<span class="hljs-keyword">find_package</span>(globjects REQUIRED) <span class="hljs-comment"># if it is really required in your project</span>
+</code></pre>
+<p>Finally, just link globjects to your own library or executable:</p>
+<pre><code class="hljs">target<span class="hljs-constructor">_link_libraries(${<span class="hljs-params">target</span>} <span class="hljs-operator">...</span> PUBLIC <span class="hljs-params">globjects</span>::<span class="hljs-params">globjects</span>)</span>
+</code></pre>
+<h1>Initialize Contexts</h1>
+<p>globjects can handle multiple OpenGL contexts. For each context, you have to initialize the globjects state.
+Further, you have to tell globjects which context is active on a per-thread basis.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-meta">#<span class="hljs-meta-keyword">include</span> <span class="hljs-meta-string">&lt;globjects/globjects.h&gt;</span></span>
+
+<span class="hljs-comment">// manage contexts</span>
+init();
+
+<span class="hljs-comment">// set explicit context active</span>
+setContext(contextID);
+
+<span class="hljs-comment">// set current context active</span>
+setCurrentContext();
+</code></pre>
+<p>You can also use glbinding to automatically sync OpenGL active contexts and their glbinding and globjects counterparts:</p>
+<pre><code class="hljs language-cpp">glbinding::Binding::addContextSwitchCallback([](glbinding::ContextHandle handle) {
+    setContext(handle);
+}
+</code></pre>
+<p>The only additional thing to do is telling glbinding when a context is switched (per thread).</p>
+<pre><code class="hljs language-cpp">glbinding::Binding::useContext(handle);
+</code></pre>
+<h1>Wrapped OpenGL Objects</h1>
+<h3>Global Functions</h3>
+<p>Some often used functions are wrapped to ease the interface as proposed by the OpenGL API.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// somehow similar to glbinding</span>
+
+<span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span> extensions = getString(GL_EXTENSIONS);
+<span class="hljs-keyword">int</span> numExtensions = getInteger(GL_NUM_EXTENSIONS);
+
+<span class="hljs-keyword">if</span> (isCoreProfile())
+{
+    <span class="hljs-keyword">return</span> renderer(); <span class="hljs-comment">// returns the GL_RENDERER string</span>
+}
+</code></pre>
+<h3>Buffer</h3>
+<p>A buffer in means of OpenGL can be used for vertex attributes, indices, uniform data, atomic counters, texture data, and shader storage data.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> buffer = <span class="hljs-keyword">new</span> Buffer();
+
+<span class="hljs-comment">// Using buffer data</span>
+buffer-&gt;setData({{ <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>}}, GL_STATIC_DRAW);
+
+<span class="hljs-comment">// Using buffer storage</span>
+buffer-&gt;setStorage({{ <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>}}, GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT);
+
+buffer-&gt;setSubData({{ <span class="hljs-number">4</span>, <span class="hljs-number">3</span>, <span class="hljs-number">2</span> }}, <span class="hljs-number">0</span>);
+buffer-&gt;bindBase(GL_SHADER_STORAGE_BUFFER, <span class="hljs-number">0</span>);
+</code></pre>
+<h3>Texture</h3>
+<p>Texture supports both traditional interfaces and bindless support.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> texture1 = <span class="hljs-keyword">new</span> Texture(GL_TEXTURE_2D); <span class="hljs-comment">// type has to be fix during lifetime</span>
+texture1-&gt;setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+texture1-&gt;setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+texture1-&gt;setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+texture1-&gt;setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+texture1-&gt;image2D(<span class="hljs-number">0</span>, GL_RGBA8, glm::ivec2(<span class="hljs-number">512</span>), <span class="hljs-number">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, <span class="hljs-literal">nullptr</span>);
+texture1-&gt;clearImage(<span class="hljs-number">0</span>, GL_RGBA, GL_UNSIGNED_BYTE, glm::ivec4(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));
+texture1-&gt;generateMipMap();
+
+<span class="hljs-keyword">auto</span> texture2 = Texture::createDefault(); <span class="hljs-comment">// creates a default-configured 2D texture</span>
+
+<span class="hljs-keyword">auto</span> handle = texture2-&gt;textureHandle(); <span class="hljs-comment">// for bindless texturing</span>
+texture2-&gt;bindActive(<span class="hljs-number">0</span>); <span class="hljs-comment">// For traditional texturing</span>
+</code></pre>
+<h3>State</h3>
+<p>OpenGL state is wrapped as States, StateSettings and Capabilities, where the latter two are mainly used internally.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> currentState = State::currentState(); <span class="hljs-comment">// full current state; usable for resetting</span>
+
+<span class="hljs-keyword">auto</span> state1 = <span class="hljs-keyword">new</span> State(State::ImmediateMode); <span class="hljs-comment">// all changes are applied immediately</span>
+state1-&gt;enable(GL_RASTERIZER_DISCARD); <span class="hljs-comment">// Configuring a Capability</span>
+state1-&gt;primitiveRestartIndex(<span class="hljs-keyword">static_cast</span>&lt;GLuint&gt;(<span class="hljs-number">-1</span>)); <span class="hljs-comment">// Configuring a StateSetting</span>
+
+<span class="hljs-keyword">auto</span> state2 = <span class="hljs-keyword">new</span> State(State::DeferredMode); <span class="hljs-comment">// changes has to be applied explicitly</span>
+state2-&gt;pointSize(<span class="hljs-number">10.0f</span>);
+state2-&gt;apply();
+
+currentState-&gt;apply(); <span class="hljs-comment">// Reset manipulated state</span>
+</code></pre>
+<h3>Error</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> error = Error::get();
+
+<span class="hljs-keyword">if</span> (error)
+{
+    <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; <span class="hljs-string">"Error "</span> &lt;&lt; <span class="hljs-built_in">std</span>::hex &lt;&lt; error.code() &lt;&lt; <span class="hljs-string">": "</span> &lt;&lt; error.name() &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+}
+</code></pre>
+<h3>Debug Message</h3>
+<p>Enable DebugMessages to get performance hints, warnings and errors from your OpenGL driver.</p>
+<pre><code class="hljs language-cpp">DebugMessage::enable(); <span class="hljs-comment">// enable automatic messages if KHR_debug is available</span>
+
+DebugMessage::setCallback([](<span class="hljs-keyword">const</span> DebugMessage &amp; message) {
+    <span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; message.message() &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>;
+}); <span class="hljs-comment">// if you want to handle messages by yourself</span>
+</code></pre>
+<h3>Framebuffer</h3>
+<p>Wraps a canvas with multiple render targets to render on.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> fbo = <span class="hljs-keyword">new</span> Framebuffer();
+fbo-&gt;attachTexture(GL_COLOR_ATTACHMENT0, texture1);
+fbo-&gt;attachTexture(GL_COLOR_ATTACHMENT1, texture2);
+fbo-&gt;attachRenderbuffer(GL_DEPTH_ATTACHMENT, depthRenderbuffer);
+fbo-&gt;setDrawBuffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_NONE });
+fbo-&gt;printStatus(<span class="hljs-literal">true</span>); <span class="hljs-comment">// Print errors if fbo is not complete</span>
+
+fbo-&gt;clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+fbo-&gt;clearBuffer(GL_COLOR, <span class="hljs-number">0</span>, glm::vec4(<span class="hljs-number">1.0f</span>, <span class="hljs-number">1.0f</span>, <span class="hljs-number">1.0f</span>, <span class="hljs-number">0.0f</span>));
+
+fbo-&gt;blit(GL_COLOR_ATTACHMENT0, {{ <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, width, height }}, Framebuffer::defaultFBO(),
+    GL_BACK_LEFT, {{ <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, width, height }}, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+</code></pre>
+<h3>Named String</h3>
+<p>Register compile-time shader replacements for shader includes.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// typically the only function call you'll need</span>
+<span class="hljs-keyword">auto</span> namedString1 = <span class="hljs-keyword">new</span> NamedString(<span class="hljs-string">"/upNormal.glsl"</span>, <span class="hljs-string">"const vec3 up = vec3(0.0, 1.0, 0.0);"</span>);
+
+<span class="hljs-comment">// or reference an actual source file</span>
+<span class="hljs-keyword">auto</span> namedString2 = <span class="hljs-keyword">new</span> NamedString(<span class="hljs-string">"/phong.glsl"</span>, <span class="hljs-keyword">new</span> File(<span class="hljs-string">"data/shaders/phong.glsl"</span>));
+</code></pre>
+<h3>Program</h3>
+<p>The Program object can represent both render programs and compute programs. Prior usage it automatically relinks upon shader changes.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> renderProgram = <span class="hljs-keyword">new</span> Program();
+renderProgram-&gt;attach(vertexShader, fragmentShader);
+renderProgram-&gt;addUniform(<span class="hljs-string">"viewProjection"</span>, glm::mat4(<span class="hljs-number">1.0</span>));
+
+renderProgram-&gt;use(); <span class="hljs-comment">// compiles shaders, links and uses program</span>
+
+<span class="hljs-keyword">auto</span> computeProgram = <span class="hljs-keyword">new</span> Program();
+computeProgram-&gt;attach(computeShader);
+
+computeProgram-&gt;dispatchCompute(<span class="hljs-number">128</span>, <span class="hljs-number">1</span>, <span class="hljs-number">1</span>);
+</code></pre>
+<h3>Program Pipeline</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> pipeline = <span class="hljs-keyword">new</span> ProgramPipeline();
+pipeline-&gt;useStages(vertexProgram, gl::GL_VERTEX_SHADER_BIT);
+pipeline-&gt;useStages(fragmentProgram, gl::GL_FRAGMENT_SHADER_BIT);
+pipeline-&gt;use(); <span class="hljs-comment">// as Program interface</span>
+</code></pre>
+<h3>Query</h3>
+<p>Query and measure time and perform conditional rendering with passed samples.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> query = <span class="hljs-keyword">new</span> Query();
+query-&gt;begin(GL_TIME_ELAPSED);
+<span class="hljs-comment">// calls</span>
+query-&gt;end(GL_TIME_ELAPSED);
+
+<span class="hljs-keyword">if</span> (!query-&gt;resultsAvailable())
+{
+    query-&gt;wait();
+}
+
+<span class="hljs-keyword">auto</span> elapsed = query-&gt;get(GL_QUERY_RESULT);
+</code></pre>
+<h3>Renderbuffer</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> renderBuffer = <span class="hljs-keyword">new</span> Renderbuffer();
+renderBuffer-&gt;storage(GL_RGBA32F, <span class="hljs-number">512</span>, <span class="hljs-number">512</span>);
+</code></pre>
+<h3>Sampler</h3>
+<p>For temporary overrides of texture parameters. Note: a newly created sampler is not configured by default, and thus invalid.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> sampler = <span class="hljs-keyword">new</span> Sampler();
+sampler-&gt;setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+sampler-&gt;setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+sampler-&gt;setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+sampler-&gt;setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+sampler-&gt;bind(<span class="hljs-number">0</span>); <span class="hljs-comment">// override sampler state for texture at binding point 0</span>
+</code></pre>
+<h3>Shader</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> shader1 = <span class="hljs-keyword">new</span> Shader::fromFile(GL_VERTEX_SHADER, filename);
+<span class="hljs-keyword">auto</span> shader2 = <span class="hljs-keyword">new</span> Shader::fromString(GL_FRAGMENT_SHADER, shaderSource);
+
+Shader::globalReplace(<span class="hljs-string">"#version 140"</span>, <span class="hljs-string">"#version 150"</span>); <span class="hljs-comment">// e.g., useful for OS X</span>
+
+shader1-&gt;setIncludePaths({ <span class="hljs-built_in">std</span>::<span class="hljs-built_in">string</span>(<span class="hljs-string">"/data"</span>) });
+
+shader2-&gt;compile();
+<span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; shader2-&gt;infoLog() &lt;&lt; <span class="hljs-built_in">std</span>::<span class="hljs-built_in">endl</span>; <span class="hljs-comment">// acess compile info log, although it's done automatically if there is a compile error</span>
+</code></pre>
+<h3>Sync</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> sync = Sync::fence(GL_SYNC_GPU_COMMANDS_COMPLETE);
+
+sync-&gt;clientWait(GL_SYNC_FLUSH_COMMANDS_BIT, <span class="hljs-number">2000000000</span>); <span class="hljs-comment">// wait on GPU; 2 secs</span>
+sync-&gt;waitSync(<span class="hljs-number">1000000</span>); <span class="hljs-comment">// wait on CPU; 1 millisecond</span>
+</code></pre>
+<h3>Transform Feedback</h3>
+<p>Connect shader outputs to buffers and restart drawing.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> tf = <span class="hljs-keyword">new</span> TransformFeedback();
+tf-&gt;setVaryings(program, { { <span class="hljs-string">"next_position"</span> } }, GL_INTERLEAVED_ATTRIBS);
+
+tf-&gt;bind();
+glEnable(GL_RASTERIZER_DISCARD);
+program-&gt;use();
+tf-&gt;begin(GL_TRIANGLES);
+vao-&gt;drawArrays(GL_TRIANGLES, <span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
+tf-&gt;end();
+glDisable(GL_RASTERIZER_DISCARD);
+tf-&gt;draw(GL_TRIANGLE_STRIP);
+</code></pre>
+<h3>Uniform</h3>
+<p>Uniforms attached to Programs are updated automatically, even after relinking.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> uniform1 = <span class="hljs-keyword">new</span> Uniform&lt;glm::vec3&gt;(<span class="hljs-string">"lightPos"</span>, glm::vec3(<span class="hljs-number">10.0f</span>, <span class="hljs-number">5.0f</span>, <span class="hljs-number">0.0f</span>)); <span class="hljs-comment">// name-based uniform binding</span>
+<span class="hljs-keyword">auto</span> uniform2 = <span class="hljs-keyword">new</span> Uniform&lt;glm::mat4&gt;(<span class="hljs-number">0</span>, glm::mat4(<span class="hljs-number">1.0f</span>)); <span class="hljs-comment">// location-based uniform binding</span>
+
+program-&gt;addUniform(uniform1);
+program-&gt;addUniform(uniform2);
+
+program-&gt;use(); <span class="hljs-comment">// uniform values are updated if required</span>
+</code></pre>
+<h3>Uniform Block</h3>
+<p>Use uniform blocks for large, often switched chunks of uniforms.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> block = program-&gt;uniformBlock(<span class="hljs-string">"uniforms"</span>);
+block-&gt;setBinding(<span class="hljs-number">0</span>);
+buffer-&gt;bindBase(GL_UNIFORM_BUFFER, <span class="hljs-number">0</span>);
+</code></pre>
+<h3>Vertex Array</h3>
+<p>Use to configure vertex shader inputs and trigger render pipeline processes.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> vao = <span class="hljs-keyword">new</span> VertexArray();
+<span class="hljs-comment">// configure bindings (see next section)</span>
+
+vao-&gt;enable(<span class="hljs-number">0</span>);
+vao-&gt;enable(<span class="hljs-number">1</span>);
+
+vao-&gt;drawArrays(GL_POINTS, <span class="hljs-number">0</span>, <span class="hljs-number">10</span>);
+</code></pre>
+<h3>Vertex Attribute Binding</h3>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// For attribute pointers</span>
+<span class="hljs-keyword">auto</span> binding1 = vao-&gt;binding(<span class="hljs-number">0</span>);
+binding1-&gt;setBuffer(vertexBuffer, <span class="hljs-number">0</span>, <span class="hljs-keyword">sizeof</span>(glm::vec3));
+binding1-&gt;setFormat(<span class="hljs-number">3</span>, GL_FLOAT, GL_FALSE, <span class="hljs-number">0</span>);
+
+<span class="hljs-comment">// For static attributes for each vertex</span>
+<span class="hljs-keyword">auto</span> binding2 = vao-&gt;binding(<span class="hljs-number">0</span>);
+binding2-&gt;setValue&lt;<span class="hljs-keyword">float</span>&gt;(<span class="hljs-number">1.0f</span>);
+</code></pre>
+<h1>Additional Features</h1>
+<h3>Reference Pointers</h3>
+<p>globjects uses the RAII (resource allocation is initialization) principle, meaning that created objects are also created on the GPU.
+To effectively manage the dual-allocated memory, we use reference pointers.
+We advise that every globjects <code>Object</code> pointer is stored in a <code>ref_ptr</code>.</p>
+<pre><code class="hljs language-cpp">{
+    ref_ptr&lt;Query&gt; query = <span class="hljs-keyword">new</span> Query(); <span class="hljs-comment">// allocate on CPU and GPU</span>
+    
+    <span class="hljs-comment">// query is destructed and freed on GPU at the end of the block.</span>
+}
+</code></pre>
+<p>As the objects in globjects uses <code>ref_ptr</code> to store references, not using reference counting can lead to <em>accidentally</em> freed objects.
+If you don't want to use smart pointers, you have to use the manual reference counting interface:</p>
+<pre><code class="hljs language-cpp">program-&gt;ref(); <span class="hljs-comment">// increase reference count</span>
+program-&gt;unref(); <span class="hljs-comment">// decreare reference count; potentially free program pointer and GPU program</span>
+</code></pre>
+<h3>Shader Templates</h3>
+<p>The sources of Shaders (<code>ShaderSource</code>) can be configured and templated.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">auto</span> <span class="hljs-keyword">template</span> = <span class="hljs-keyword">new</span> StringTemplate(<span class="hljs-keyword">new</span> File(<span class="hljs-string">"fragmentShader.frag"</span>));
+<span class="hljs-keyword">template</span>-&gt;replace(<span class="hljs-string">"REPLACE"</span>, <span class="hljs-string">"WITH THIS"</span>);
+
+<span class="hljs-keyword">auto</span> shader = <span class="hljs-keyword">new</span> Shader(<span class="hljs-keyword">template</span>);
+</code></pre>
+<h3>Strategy Override</h3>
+<p>Although globjects tries to use most current OpenGL APIs, you can override this automatic process.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// Enable CPU shader includes (although supported, some drivers have problems, so disable it)</span>
+globjects::init(Shader::IncludeImplementation::Fallback);
+
+<span class="hljs-comment">// Update strategy at run-time</span>
+Buffer::hintBindlessImplementation(Buffer::BindlessImplementation::Legacy);
+</code></pre>
+<h3>Logging</h3>
+<p>globjects provides logging interfaces to its objects as well as glm objects.</p>
+<pre><code class="hljs language-cpp"><span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; Framebuffer::defaultFBO();
+<span class="hljs-built_in">std</span>::<span class="hljs-built_in">cout</span> &lt;&lt; glm::vec4(<span class="hljs-number">1.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">0.0</span>, <span class="hljs-number">1.0</span>);
+warning() &lt;&lt; shader;
+</code></pre>
+</div></div></section><section class="container"><div class="row"><div class="col"><h1>Professional Support</h1>
+<p>CG Internals offers computer graphics R&amp;D as well as reliable technology and innovative concepts to support your computer graphics visions.
+We provide trainings and can help you integrate and customize <em>cpplocate</em> in your next project.</p>
+<p>Visit <a href="https://www.cginternals.com">Professional Support and Services</a> for more details.</p>
+</div></div></section><footer class="text-center" id="footer">Copyright &copy; 2013&thinsp;&ndash;&thinsp;2018  <a href="https://cginternals.com">CG Internals</a><br><small>This type of website is critically endangered: static, self-hosted, single-origin, as well as tracking and cookie-free. <a href="https://cginternals.com/en/privacy-policy.html">Privacy Policy</a></small></footer></body></html>
